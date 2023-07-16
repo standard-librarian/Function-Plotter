@@ -3,14 +3,18 @@ from PySide6.QtWidgets import (
     QMainWindow,
     QLabel,
     QVBoxLayout,
-    QWidget, QLineEdit, QHBoxLayout, QPushButton, QSlider, QCheckBox
+    QWidget, QLineEdit, QHBoxLayout, QPushButton, QSlider
 )
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from backend.function_processor import FunctionProcessor
+
+from utils.plot_option import PlotOption
 
 
 class Plotter(QMainWindow):
     def __init__(self):
+        self.function_processor = None
         super().__init__()
         self.create_variables()
         self.create_widgets()
@@ -21,13 +25,12 @@ class Plotter(QMainWindow):
 
     def create_variables(self):
         self.is_3d_checkbox = False
+        self.draw_option = None
+        self.last_plot_option = None
 
     def create_widgets(self):
         self.function_label = QLabel("\tEnter a f(x):")
         self.function_input = QLineEdit()
-        self.function_3d_checkbox = QCheckBox("Enable 3D")
-        self.function_3d_label = QLabel("\tEnter a f(x, y):")
-        self.function_3d_input = QLineEdit()
 
         self.xmin_label = QLabel("Range of x between:")
         self.xmin_input = QLineEdit()
@@ -40,6 +43,10 @@ class Plotter(QMainWindow):
 
         self.samples_label = QLabel("Number of X samples:")
         self.samples_slider = QSlider(Qt.Orientation.Horizontal)
+        self.samples_slider.setMinimum(1)
+        self.samples_slider.setMaximum(500)
+        self.samples_slider.setSingleStep(1)
+        self.samples_slider.setValue(100)
 
         self.scatter_button = QPushButton("Scatter")
         self.bar_button = QPushButton("Bar")
@@ -53,11 +60,8 @@ class Plotter(QMainWindow):
         self.layout = QVBoxLayout()
 
         self.function_layout = QHBoxLayout()
-        self.function_layout.addWidget(self.function_3d_checkbox)
         self.function_layout.addWidget(self.function_label)
         self.function_layout.addWidget(self.function_input)
-        self.function_layout.addWidget(self.function_3d_label)
-        self.function_layout.addWidget(self.function_3d_input)
 
         self.range_x_layout = QHBoxLayout()
         self.range_x_layout.addWidget(self.xmin_label)
@@ -94,27 +98,80 @@ class Plotter(QMainWindow):
         self.setGeometry(500, 50, 800, 700)
 
     def connect_signals(self):
-        self.function_3d_checkbox.stateChanged.connect(self.enable_3d)
+        self.plot_button.clicked.connect(self.select_plot_and_draw)
+        self.scatter_button.clicked.connect(self.select_scatter_and_draw)
+        self.bar_button.clicked.connect(self.select_bar_and_draw)
+        self.stem_button.clicked.connect(self.select_stem_and_draw)
+        self.step_button.clicked.connect(self.select_step_and_draw)
         self.zoom_in_button.clicked.connect(self.zoom_in)
         self.zoom_out_button.clicked.connect(self.zoom_out)
+        self.samples_slider.sliderReleased.connect(self.draw)
 
-    def enable_3d(self, enable):
-        self.function_label.setHidden(enable)
-        self.function_input.setHidden(enable)
-        self.function_input.setEnabled(not enable)
-        self.samples_label.setHidden(enable)
-        self.samples_slider.setHidden(enable)
-        self.scatter_button.setHidden(enable)
-        self.bar_button.setHidden(enable)
-        self.stem_button.setHidden(enable)
-        self.step_button.setHidden(enable)
+    def select_plot_and_draw(self):
+        self.draw_option = PlotOption.PLOT
+        self.draw()
 
-        self.function_3d_label.setHidden(not enable)
-        self.function_3d_input.setHidden(not enable)
-        self.function_3d_input.setEnabled(enable)
+    def select_scatter_and_draw(self):
+        self.draw_option = PlotOption.SCATTER
+        self.draw()
+
+    def select_bar_and_draw(self):
+        self.draw_option = PlotOption.BAR
+        self.draw()
+
+    def select_stem_and_draw(self):
+        self.draw_option = PlotOption.STEM
+        self.draw()
+
+    def select_step_and_draw(self):
+        self.draw_option = PlotOption.STEP
+        self.draw()
+
+    def draw(self):
+        x_data, y_data = self.prepare_to_draw()
+        if self.draw_option == PlotOption.PLOT:
+            self.plot(x_data, y_data)
+        elif self.draw_option == PlotOption.SCATTER:
+            self.scatter(x_data, y_data)
+        elif self.draw_option == PlotOption.BAR:
+            self.bar(x_data, y_data)
+        elif self.draw_option == PlotOption.STEM:
+            self.stem(x_data, y_data)
+        elif self.draw_option == PlotOption.STEP:
+            self.step(x_data, y_data)
+
+    def prepare_to_draw(self):
+        self.function_processor = FunctionProcessor(self,
+                                                    self.function_input.text(),
+                                                    self.xmin_input.text(),
+                                                    self.xmax_input.text(),
+                                                    x_samples=self.samples_slider.value())
+        self.function_processor.validate_2d_function()
+        x_data, y_data = self.function_processor.parse_2d_function()
+        self.figure.clear()
+        self.ax = self.figure.add_subplot(111)
+        return x_data, y_data
+
+    def plot(self, x_data, y_data):
+        self.ax.plot(x_data, y_data)
+        self.canvas.draw()
+
+    def scatter(self, x_data, y_data):
+        self.ax.scatter(x_data, y_data)
+        self.canvas.draw()
+
+    def bar(self, x_data, y_data):
+        self.ax.bar(x_data, y_data)
+        self.canvas.draw()
+
+    def stem(self, x_data, y_data):
+        self.ax.stem(x_data, y_data)
+        self.canvas.draw()
+    def step(self, x_data, y_data):
+        self.ax.step(x_data, y_data)
+        self.canvas.draw()
 
     def setup(self):
-        self.enable_3d(self.is_3d_checkbox)
         self.show()
 
     def zoom_in(self):
@@ -130,3 +187,16 @@ class Plotter(QMainWindow):
         self.ax.set_xlim(xlim[0] * 1.1, xlim[1] * 1.1)
         self.ax.set_ylim(ylim[0] * 1.1, ylim[1] * 1.1)
         self.canvas.draw()
+
+    def redraw_with_samples(self):
+        self.function_processor.samples = self.samples_slider.value()
+        if self.last_plot_option == PlotOption.PLOT:
+            self.plot()
+        elif self.last_plot_option == PlotOption.SCATTER:
+            pass
+        elif self.last_plot_option == PlotOption.BAR:
+            pass
+        elif self.last_plot_option == PlotOption.STEM:
+            pass
+        elif self.last_plot_option == PlotOption.STEP:
+            pass
