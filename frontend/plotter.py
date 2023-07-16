@@ -14,19 +14,15 @@ from utils.plot_option import PlotOption
 
 class Plotter(QMainWindow):
     def __init__(self):
+        self.draw_option = None
         self.function_processor = None
+
         super().__init__()
-        self.create_variables()
         self.create_widgets()
         self.create_layouts()
         self.create_ui()
         self.connect_signals()
         self.setup()
-
-    def create_variables(self):
-        self.is_3d_checkbox = False
-        self.draw_option = None
-        self.last_plot_option = None
 
     def create_widgets(self):
         self.function_label = QLabel("\tEnter a f(x):")
@@ -85,14 +81,13 @@ class Plotter(QMainWindow):
         self.plotting_options_layout.addWidget(self.step_button)
 
     def create_ui(self):
+        widget = QWidget()
         self.layout.addLayout(self.function_layout)
         self.layout.addLayout(self.range_x_layout)
         self.layout.addLayout(self.buttons_layout)
         self.layout.addLayout(self.samples_layout)
         self.layout.addLayout(self.plotting_options_layout)
         self.layout.addWidget(self.canvas)
-
-        widget = QWidget()
         widget.setLayout(self.layout)
         self.setCentralWidget(widget)
         self.setGeometry(500, 50, 800, 700)
@@ -106,6 +101,9 @@ class Plotter(QMainWindow):
         self.zoom_in_button.clicked.connect(self.zoom_in)
         self.zoom_out_button.clicked.connect(self.zoom_out)
         self.samples_slider.sliderReleased.connect(self.draw)
+
+    def setup(self):
+        self.show()
 
     def select_plot_and_draw(self):
         self.draw_option = PlotOption.PLOT
@@ -167,36 +165,20 @@ class Plotter(QMainWindow):
     def stem(self, x_data, y_data):
         self.ax.stem(x_data, y_data)
         self.canvas.draw()
+
     def step(self, x_data, y_data):
         self.ax.step(x_data, y_data)
         self.canvas.draw()
 
-    def setup(self):
-        self.show()
+    def zoom(self, percent):
+        xlim = self.ax.get_xlim()
+        ylim = self.ax.get_ylim()
+        self.ax.set_xlim(xlim[0] * percent, xlim[1] * percent)
+        self.ax.set_ylim(ylim[0] * percent, ylim[1] * percent)
+        self.canvas.draw()
 
     def zoom_in(self):
-        xlim = self.ax.get_xlim()
-        ylim = self.ax.get_ylim()
-        self.ax.set_xlim(xlim[0] * 0.9, xlim[1] * 0.9)
-        self.ax.set_ylim(ylim[0] * 0.9, ylim[1] * 0.9)
-        self.canvas.draw()
+        self.zoom(0.8)
 
     def zoom_out(self):
-        xlim = self.ax.get_xlim()
-        ylim = self.ax.get_ylim()
-        self.ax.set_xlim(xlim[0] * 1.1, xlim[1] * 1.1)
-        self.ax.set_ylim(ylim[0] * 1.1, ylim[1] * 1.1)
-        self.canvas.draw()
-
-    def redraw_with_samples(self):
-        self.function_processor.samples = self.samples_slider.value()
-        if self.last_plot_option == PlotOption.PLOT:
-            self.plot()
-        elif self.last_plot_option == PlotOption.SCATTER:
-            pass
-        elif self.last_plot_option == PlotOption.BAR:
-            pass
-        elif self.last_plot_option == PlotOption.STEM:
-            pass
-        elif self.last_plot_option == PlotOption.STEP:
-            pass
+        self.zoom(1.25)

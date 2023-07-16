@@ -6,6 +6,7 @@ from frontend.plotter import Plotter
 def main() -> None:
     app = QApplication([])
     plt = Plotter()
+    plt.setWindowTitle("Function Plotter by Medhat Mohammed")
     app.exec()
 
 

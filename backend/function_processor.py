@@ -2,6 +2,7 @@ import re
 import sympy as sympy
 from PySide6.QtWidgets import QMessageBox
 
+
 class FunctionProcessor():
     def __init__(self, plotter, function_string, xmin, xmax, x_samples):
         self.plotter = plotter
@@ -23,7 +24,8 @@ class FunctionProcessor():
         self.function_string = self.function_string.replace("^", "**")
         x = sympy.Symbol('x')
         function = sympy.parse_expr(self.function_string)
-        x_data = [self.x_range[0] + (self.x_range[1] - self.x_range[0]) * i / self.x_samples for i in range(self.x_samples + 1)]
+        x_data = [self.x_range[0] + (self.x_range[1] - self.x_range[0]) * i / self.x_samples for i in
+                  range(self.x_samples + 1)]
         y_data = [function.subs(x, xi) for xi in x_data]
 
         return x_data, y_data
