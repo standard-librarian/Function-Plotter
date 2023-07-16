@@ -25,6 +25,9 @@ class Plotter(QMainWindow):
     def create_widgets(self):
         self.function_label = QLabel("\tEnter a f(x):")
         self.function_input = QLineEdit()
+        self.function_3d_checkbox = QCheckBox("Enable 3D")
+        self.function_3d_label = QLabel("\tEnter a f(x, y):")
+        self.function_3d_input = QLineEdit()
 
         self.xmin_label = QLabel("Range of x between:")
         self.xmin_input = QLineEdit()
@@ -50,8 +53,11 @@ class Plotter(QMainWindow):
         self.layout = QVBoxLayout()
 
         self.function_layout = QHBoxLayout()
+        self.function_layout.addWidget(self.function_3d_checkbox)
         self.function_layout.addWidget(self.function_label)
         self.function_layout.addWidget(self.function_input)
+        self.function_layout.addWidget(self.function_3d_label)
+        self.function_layout.addWidget(self.function_3d_input)
 
         self.range_x_layout = QHBoxLayout()
         self.range_x_layout.addWidget(self.xmin_label)
@@ -88,10 +94,27 @@ class Plotter(QMainWindow):
         self.setGeometry(500, 50, 800, 700)
 
     def connect_signals(self):
+        self.function_3d_checkbox.stateChanged.connect(self.enable_3d)
         self.zoom_in_button.clicked.connect(self.zoom_in)
         self.zoom_out_button.clicked.connect(self.zoom_out)
 
+    def enable_3d(self, enable):
+        self.function_label.setHidden(enable)
+        self.function_input.setHidden(enable)
+        self.function_input.setEnabled(not enable)
+        self.samples_label.setHidden(enable)
+        self.samples_slider.setHidden(enable)
+        self.scatter_button.setHidden(enable)
+        self.bar_button.setHidden(enable)
+        self.stem_button.setHidden(enable)
+        self.step_button.setHidden(enable)
+
+        self.function_3d_label.setHidden(not enable)
+        self.function_3d_input.setHidden(not enable)
+        self.function_3d_input.setEnabled(enable)
+
     def setup(self):
+        self.enable_3d(self.is_3d_checkbox)
         self.show()
 
     def zoom_in(self):
