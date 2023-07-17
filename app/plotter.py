@@ -7,22 +7,22 @@ from PySide6.QtWidgets import (
 )
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from backend.function_processor import FunctionProcessor
+
 
 from utils.plot_option import PlotOption
+from utils.validation import *
 
 
 class Plotter(QMainWindow):
     def __init__(self):
         self.draw_option = None
         self.function_processor = None
-
         super().__init__()
         self.create_widgets()
         self.create_layouts()
         self.create_ui()
         self.connect_signals()
-        self.setup()
+        self.show()
 
     def create_widgets(self):
         self.function_label = QLabel("\tEnter a f(x):")
@@ -40,7 +40,7 @@ class Plotter(QMainWindow):
         self.samples_label = QLabel("Number of X samples:")
         self.samples_slider = QSlider(Qt.Orientation.Horizontal)
         self.samples_slider.setMinimum(1)
-        self.samples_slider.setMaximum(500)
+        self.samples_slider.setMaximum(100)
         self.samples_slider.setSingleStep(1)
         self.samples_slider.setValue(100)
 
@@ -93,81 +93,41 @@ class Plotter(QMainWindow):
         self.setGeometry(500, 50, 800, 700)
 
     def connect_signals(self):
-        self.plot_button.clicked.connect(self.select_plot_and_draw)
-        self.scatter_button.clicked.connect(self.select_scatter_and_draw)
-        self.bar_button.clicked.connect(self.select_bar_and_draw)
-        self.stem_button.clicked.connect(self.select_stem_and_draw)
-        self.step_button.clicked.connect(self.select_step_and_draw)
+        self.plot_button.clicked.connect(lambda: self.draw(PlotOption.PLOT))
+        self.scatter_button.clicked.connect(lambda: self.draw(PlotOption.SCATTER))
+        self.bar_button.clicked.connect(lambda: self.draw(PlotOption.BAR))
+        self.stem_button.clicked.connect(lambda: self.draw(PlotOption.STEM))
+        self.step_button.clicked.connect(lambda: self.draw(PlotOption.STEP))
+        self.samples_slider.sliderReleased.connect(lambda: self.draw(self.draw_option))
         self.zoom_in_button.clicked.connect(self.zoom_in)
         self.zoom_out_button.clicked.connect(self.zoom_out)
-        self.samples_slider.sliderReleased.connect(self.draw)
-
-    def setup(self):
-        self.show()
-
-    def select_plot_and_draw(self):
-        self.draw_option = PlotOption.PLOT
-        self.draw()
-
-    def select_scatter_and_draw(self):
-        self.draw_option = PlotOption.SCATTER
-        self.draw()
-
-    def select_bar_and_draw(self):
-        self.draw_option = PlotOption.BAR
-        self.draw()
-
-    def select_stem_and_draw(self):
-        self.draw_option = PlotOption.STEM
-        self.draw()
-
-    def select_step_and_draw(self):
-        self.draw_option = PlotOption.STEP
-        self.draw()
-
-    def draw(self):
-        x_data, y_data = self.prepare_to_draw()
-        if self.draw_option == PlotOption.PLOT:
-            self.plot(x_data, y_data)
-        elif self.draw_option == PlotOption.SCATTER:
-            self.scatter(x_data, y_data)
-        elif self.draw_option == PlotOption.BAR:
-            self.bar(x_data, y_data)
-        elif self.draw_option == PlotOption.STEM:
-            self.stem(x_data, y_data)
-        elif self.draw_option == PlotOption.STEP:
-            self.step(x_data, y_data)
 
     def prepare_to_draw(self):
-        self.function_processor = FunctionProcessor(self,
-                                                    self.function_input.text(),
-                                                    self.xmin_input.text(),
-                                                    self.xmax_input.text(),
-                                                    x_samples=self.samples_slider.value())
-        self.function_processor.validate_2d_function()
-        x_data, y_data = self.function_processor.parse_2d_function()
+        xmin = self.xmin_input.text()
+        xmax = self.xmax_input.text()
+        function_string = self.function_input.text()
+        samples = self.samples_slider.value()
+
+        x_range = validate_range(self, xmin, xmax)
+        validate_2d_function(self, function_string)
+        x_data, y_data = parse_2d_function(function_string, x_range, samples)
         self.figure.clear()
         self.ax = self.figure.add_subplot(111)
         return x_data, y_data
 
-    def plot(self, x_data, y_data):
-        self.ax.plot(x_data, y_data)
-        self.canvas.draw()
-
-    def scatter(self, x_data, y_data):
-        self.ax.scatter(x_data, y_data)
-        self.canvas.draw()
-
-    def bar(self, x_data, y_data):
-        self.ax.bar(x_data, y_data)
-        self.canvas.draw()
-
-    def stem(self, x_data, y_data):
-        self.ax.stem(x_data, y_data)
-        self.canvas.draw()
-
-    def step(self, x_data, y_data):
-        self.ax.step(x_data, y_data)
+    def draw(self, draw_option):
+        x_data, y_data = self.prepare_to_draw()
+        if draw_option == PlotOption.PLOT:
+            self.ax.plot(x_data, y_data)
+        elif draw_option == PlotOption.SCATTER:
+            self.ax.scatter(x_data, y_data)
+        elif draw_option == PlotOption.BAR:
+            self.ax.bar(x_data, y_data)
+        elif draw_option == PlotOption.STEM:
+            self.ax.stem(x_data, y_data)
+        elif draw_option == PlotOption.STEP:
+            self.ax.step(x_data, y_data)
+        self.draw_option = draw_option
         self.canvas.draw()
 
     def zoom(self, percent):
