@@ -174,6 +174,11 @@ class Plotter(QMainWindow):
             draw_option (PlotOption): The option for the type of plot to be drawn.
 
         """
+
+        if not hasattr(self, 'ax'):
+            self.ax = self.figure.add_subplot(PLOT_PLACE_FROM_CANVAS)
+        else:
+            self.ax.clear()
         x_data, y_data = self.prepare_to_draw()
         if draw_option == PlotOption.PLOT:
             self.ax.plot(x_data, y_data)
@@ -189,6 +194,8 @@ class Plotter(QMainWindow):
         self.canvas.draw()
 
     def zoom(self, percent: float) -> None:
+        if not hasattr(self, 'ax'):
+            self.ax = self.figure.add_subplot(PLOT_PLACE_FROM_CANVAS)
         """
         General zoom function for zooming in and out.
 
