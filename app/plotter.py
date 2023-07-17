@@ -8,9 +8,9 @@ from PySide6.QtWidgets import (
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 
-
-from utils.plot_option import PlotOption
-from utils.validation import *
+from app.utils.plot_option import PlotOption
+from app.utils.validation import *
+from app.utils.constants import *
 
 
 class Plotter(QMainWindow):
@@ -25,6 +25,7 @@ class Plotter(QMainWindow):
         self.show()
 
     def create_widgets(self):
+        """Make objects of the widgets that's needed for the app"""
         self.function_label = QLabel("\tEnter a f(x):")
         self.function_input = QLineEdit()
 
@@ -39,10 +40,10 @@ class Plotter(QMainWindow):
 
         self.samples_label = QLabel("Number of X samples:")
         self.samples_slider = QSlider(Qt.Orientation.Horizontal)
-        self.samples_slider.setMinimum(1)
-        self.samples_slider.setMaximum(100)
-        self.samples_slider.setSingleStep(1)
-        self.samples_slider.setValue(100)
+        self.samples_slider.setMinimum(MIN_SLIDER_VALUE)
+        self.samples_slider.setMaximum(MAX_SLIDER_VALUE)
+        self.samples_slider.setSingleStep(SLIDER_STEP)
+        self.samples_slider.setValue(SLIDER_STARTING_VALUE)
 
         self.scatter_button = QPushButton("Scatter")
         self.bar_button = QPushButton("Bar")
@@ -53,6 +54,7 @@ class Plotter(QMainWindow):
         self.canvas = FigureCanvas(self.figure)
 
     def create_layouts(self):
+        """Organize the main layout into sub layouts each has its widgets"""
         self.layout = QVBoxLayout()
 
         self.function_layout = QHBoxLayout()
@@ -81,6 +83,7 @@ class Plotter(QMainWindow):
         self.plotting_options_layout.addWidget(self.step_button)
 
     def create_ui(self):
+        """Construct the actual ui from the layouts"""
         widget = QWidget()
         self.layout.addLayout(self.function_layout)
         self.layout.addLayout(self.range_x_layout)
@@ -90,9 +93,10 @@ class Plotter(QMainWindow):
         self.layout.addWidget(self.canvas)
         widget.setLayout(self.layout)
         self.setCentralWidget(widget)
-        self.setGeometry(500, 50, 800, 700)
+        self.setGeometry(WINDOW_X_START, WINDOW_Y_START, WINDOW_WIDTH, WINDOW_HEIGHT)
 
     def connect_signals(self):
+        """Connect signals to their slots"""
         self.plot_button.clicked.connect(lambda: self.draw(PlotOption.PLOT))
         self.scatter_button.clicked.connect(lambda: self.draw(PlotOption.SCATTER))
         self.bar_button.clicked.connect(lambda: self.draw(PlotOption.BAR))
@@ -103,6 +107,7 @@ class Plotter(QMainWindow):
         self.zoom_out_button.clicked.connect(self.zoom_out)
 
     def prepare_to_draw(self):
+        """When the draw() called from the UI, perpare_to_draw creates the needed vars"""
         xmin = self.xmin_input.text()
         xmax = self.xmax_input.text()
         function_string = self.function_input.text()
@@ -112,10 +117,11 @@ class Plotter(QMainWindow):
         validate_2d_function(self, function_string)
         x_data, y_data = parse_2d_function(function_string, x_range, samples)
         self.figure.clear()
-        self.ax = self.figure.add_subplot(111)
+        self.ax = self.figure.add_subplot(PLOT_PLACE_FROM_CANVAS)
         return x_data, y_data
 
     def draw(self, draw_option):
+        """Choose the Option of drawing and draws on the canvas"""
         x_data, y_data = self.prepare_to_draw()
         if draw_option == PlotOption.PLOT:
             self.ax.plot(x_data, y_data)
@@ -131,6 +137,7 @@ class Plotter(QMainWindow):
         self.canvas.draw()
 
     def zoom(self, percent):
+        """General Zoom function to be used by both zoom in and zoom out"""
         xlim = self.ax.get_xlim()
         ylim = self.ax.get_ylim()
         self.ax.set_xlim(xlim[0] * percent, xlim[1] * percent)
@@ -138,7 +145,9 @@ class Plotter(QMainWindow):
         self.canvas.draw()
 
     def zoom_in(self):
-        self.zoom(0.8)
+        """When the zoom in button pressed, this slot activates"""
+        self.zoom(ZOOM_IN)
 
     def zoom_out(self):
-        self.zoom(1.25)
+        """When the zoom out button pressed, this slot activates"""
+        self.zoom(ZOOM_OUT)
