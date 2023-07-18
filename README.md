@@ -40,7 +40,7 @@ python main.py
 
 ## Videos
 
-https://github.com/standard-librarian/Function-Plotter/assets/68431349/46c11cfc-eeee-4024-adc2-122a6f1a7fdc
+https://github.com/standard-librarian/Function-Plotter/assets/68431349/9c9f6247-ef29-43b7-9ff0-ec768b9498d6
 
 ## Screenshots
 
