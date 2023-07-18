@@ -7,7 +7,6 @@ from PySide6.QtWidgets import (
 )
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from typing import Tuple, List
 
 from app.utils.plot_option import PlotOption
 from app.utils.validation import *
@@ -33,7 +32,7 @@ class Plotter(QMainWindow):
 
     def create_widgets(self) -> None:
         """
-        Create objects of the widgets needed for the app.
+        Create objects of the widgets needed for the src.
 
         This method initializes the widgets used by the Plotter, including labels, input fields, buttons,
         sliders, and the matplotlib canvas.

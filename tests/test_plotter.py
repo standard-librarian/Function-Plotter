@@ -1,4 +1,6 @@
 import pytest
+import unittest.mock as mock
+
 from PySide6.QtWidgets import QHBoxLayout
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 
@@ -128,7 +130,7 @@ def test_draw(plotter: Plotter):
 
 
 @pytest.mark.plotter
-def test_draw_option(plotter: Plotter, draw_option: PlotOption, mocker):
+def test_draw_option(plotter: Plotter, draw_option: PlotOption):
     """
     Test the draw() method with a specific draw_option.
 
@@ -140,9 +142,9 @@ def test_draw_option(plotter: Plotter, draw_option: PlotOption, mocker):
         draw_option (PlotOption): The draw_option value to test.
 
     """
-    mocker.patch.object(Plotter, 'prepare_to_draw', return_value=([1, 2, 3], [4, 5, 6]))
-    plotter.draw(draw_option)
-    assert plotter.draw_option == draw_option, f"Unexpected draw_option value after {draw_option}"
+    with mock.patch.object(Plotter, 'prepare_to_draw', return_value=([1, 2, 3], [4, 5, 6])):
+        plotter.draw(draw_option)
+        assert plotter.draw_option == draw_option, f"Unexpected draw_option value after {draw_option}"
 
 
 @pytest.mark.plotter

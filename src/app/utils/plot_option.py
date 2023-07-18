@@ -1,3 +1,4 @@
+import enum
 from enum import Enum
 
 
@@ -16,8 +17,8 @@ class PlotOption(Enum):
             STEP (int): Option for plotting a step plot.
 
         """
-    PLOT = 1
-    SCATTER = 2
-    BAR = 3
-    STEM = 4
-    STEP = 5
+    PLOT = enum.auto()
+    SCATTER = enum.auto()
+    BAR = enum.auto()
+    STEM = enum.auto()
+    STEP = enum.auto()

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import re
 from typing import Tuple, List
 
@@ -5,7 +7,7 @@ import sympy
 from PySide6.QtWidgets import QMessageBox
 
 
-def validate_range(plotter, xmin: str, xmax: str) -> Tuple[float, float]:
+def validate_range(plotter, xmin: str, xmax: str) -> None | Tuple[float, float]:
     """
     Validate the range of x and create a valid x_range.
 
@@ -27,7 +29,7 @@ def validate_range(plotter, xmin: str, xmax: str) -> Tuple[float, float]:
 
     except ValueError:
         QMessageBox.warning(plotter, "Invalid input", "Enter a valid range of x.")
-        return
+        return None
     return x_range
 
 

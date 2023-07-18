@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QApplication
 
-from app.plotter import Plotter
+from src.app.plotter import Plotter
 
 
 def main() -> None:

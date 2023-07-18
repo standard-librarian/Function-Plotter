@@ -64,7 +64,7 @@ def test_validate_2d_function_invalid_input(mocker):
     )
 
 
-@pytest.mark.validation
+@pytest.mark.auto
 def test_parse_2d_function():
     """Test parse_2d_function."""
     function_string = "2*x + 3"
