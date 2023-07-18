@@ -1,9 +1,6 @@
 [build-system]
-requires = ["setuptools>=42.0", "wheel"]
-build-backend = "setuptools.build_meta"
-
-[tool.pytest.ini_options]
-addopts = "--cov=app"
-testpaths = [
-    "tests",
+requires = [
+  "setuptools >= 42",
+  "wheel",
+  "tox"
 ]
